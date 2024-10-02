@@ -34,7 +34,12 @@ public class RobotContainer {
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
-  private void configureBindings() {
+ 
+
+  public RobotContainer() {
+    configureBindings();
+  }
+   private void configureBindings() {
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
                                                                                            // negative Y (forward)
@@ -54,11 +59,6 @@ public class RobotContainer {
     }
     drivetrain.registerTelemetry(logger::telemeterize);
   }
-
-  public RobotContainer() {
-    configureBindings();
-  }
-
   public Command getAutonomousCommand() {
     return Commands.print("No autonomous command configured");
   }
