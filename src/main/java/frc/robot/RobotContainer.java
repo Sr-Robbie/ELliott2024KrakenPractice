@@ -14,10 +14,15 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.FeedShootCommand;
+import frc.robot.commands.IntakeFeedCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Intake.States.intakingState;
+import frc.robot.subsystems.Shooter.Shooter;
+import frc.robot.subsystems.Feed.Feed;
+import frc.robot.subsystems.Feed.States.feedState;
 
 public class RobotContainer {
   private double MaxSpeed = TunerConstants.kSpeedAt12VoltsMps; // kSpeedAt12VoltsMps desired top speed
@@ -27,12 +32,14 @@ public class RobotContainer {
   private final CommandXboxController joystick = new CommandXboxController(0); // My joystick
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.DriveTrain; // My drivetrain
   private Intake intake;
+  private Feed feed;
+  private Shooter shooter;
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
                                                                // driving in open loop
   private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
-  private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+  //private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
   private final Telemetry logger = new Telemetry(MaxSpeed);
 
@@ -41,25 +48,22 @@ public class RobotContainer {
   public RobotContainer() {
 
   createSubsystems();
-  createDefaultStates();
   configureBindings();
   }
 
   public void createSubsystems(){
   intake = new Intake();
-
+  feed = new Feed();
+  shooter = new Shooter();
   }
 
-public void createDefaultStates(){
-  intake.setDefaultCommand(new intakingState(intake, 0.0));
-}
 
 
-  private void configureBindings() {
+  public void configureBindings() {
 
-    joystick.leftTrigger(0.1).whileTrue( new intakingState(intake, 0.9));
-    joystick.rightTrigger(0.1).whileTrue(new intakingState(intake, -.09));
-
+    joystick.leftTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, 1, 0.9));
+    joystick.rightTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, -0.9, -0.9));
+    joystick.rightBumper().whileTrue(new FeedShootCommand(shooter, feed ,1 ,0.5));
 
 
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
@@ -70,14 +74,10 @@ public void createDefaultStates(){
         ));
 
     joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.b().whileTrue(drivetrain
-        .applyRequest(() -> point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))));
-
-    // reset the field-centric heading on left bumper press
-    joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
+    joystick.b().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
 
     if (Utils.isSimulation()) {
-      drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(90)));
+      drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270)));
     }
     drivetrain.registerTelemetry(logger::telemeterize);
   }
