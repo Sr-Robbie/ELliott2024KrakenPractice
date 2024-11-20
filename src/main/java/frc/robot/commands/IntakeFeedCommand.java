@@ -9,8 +9,8 @@ import frc.robot.subsystems.Intake.States.intakingState;
 public class IntakeFeedCommand extends ParallelCommandGroup { 
     public IntakeFeedCommand(Intake intake, Feed feed, double intakeSpeed, double feedSpeed) {
         super(
-       new feedState(feed, feedSpeed), new intakingState(intake, intakeSpeed)
-
+            new feedState(feed, feedSpeed), 
+            new intakingState(intake, intakeSpeed)
         );
     }
 }

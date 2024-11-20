@@ -14,10 +14,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+//import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+//import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.FeedShootCommand;
@@ -28,12 +29,14 @@ import frc.robot.subsystems.Intake.Intake;
 import frc.robot.subsystems.Intake.States.intakingState;
 import frc.robot.subsystems.Shooter.Shooter;
 import frc.robot.subsystems.Feed.Feed;
+//import frc.robot.subsystems.Feed.States.feedState;
+import frc.robot.subsystems.Feed.States.feedState;
 
 
 public class RobotContainer {
   private ShuffleboardTab autoTab;
   private SendableChooser<Command> autoChooser;
-  private Field2d field;
+ // private Field2d field;
 
 
 
@@ -58,9 +61,9 @@ public class RobotContainer {
  
 
   public RobotContainer() {
-    registerNamedCommands();
     createSubsystems();
     configureBindings();
+    registerNamedCommands();
   }
 
   public void createSubsystems(){
@@ -76,16 +79,18 @@ public class RobotContainer {
     autoTab = Shuffleboard.getTab("Auto");
     autoTab.add(autoChooser).withSize(2, 1);
 
-    autoChooser.setDefaultOption("TestAuto", new PathPlannerAuto("New Auto"));
+    autoChooser.setDefaultOption("Intake Auto", new PathPlannerAuto("Intake"));
+    autoChooser.addOption("Circle Auto", new PathPlannerAuto("Circle"));
+    autoChooser.addOption("Intkae??", new PathPlannerAuto("New Auto"));
+
   }
 
 
   public void configureBindings() {
 
-    joystick.leftTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, 1, 0.9));
+    joystick.leftTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, .9, 0.9));
     joystick.rightTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, -0.9, -0.9));
     joystick.rightBumper().whileTrue(new FeedShootCommand(shooter, feed ,1 ,0.5));
-
 
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
@@ -95,8 +100,7 @@ public class RobotContainer {
         ));
 
     joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-    joystick.b().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldRelative()));
-
+    joystick.b().onTrue(drivetrain.reset());
     if (Utils.isSimulation()) {
       drivetrain.seedFieldRelative(new Pose2d(new Translation2d(), Rotation2d.fromDegrees(270)));
     }
@@ -104,9 +108,9 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands () {
-    NamedCommands.registerCommand("Intake", new intakingState(intake, 0.9));
+    NamedCommands.registerCommand("Intake", (new IntakeFeedCommand(intake, feed, .9, .9)));
+    
   }
-
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }
