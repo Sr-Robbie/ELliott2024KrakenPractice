@@ -14,7 +14,7 @@ public class Shooter extends SubsystemBase {
 
 public CANSparkFlex shooterMotorTop;
 public CANSparkFlex shooterMotorBottom;
-
+public void lidar(){};
   public Shooter() {
     shooterMotorTop = new CANSparkFlex(16, MotorType.kBrushless);
      
@@ -31,6 +31,8 @@ public CANSparkFlex shooterMotorBottom;
     shooterMotorBottom.setInverted(true);
 
     shooterMotorBottom.setIdleMode(IdleMode.kBrake);
+
+    lidar = new Lidar(11);
   }
   public void setPower(double power) {
     shooterMotorTop.set(power);

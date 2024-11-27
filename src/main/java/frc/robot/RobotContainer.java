@@ -15,7 +15,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-//import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 //import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -49,6 +49,7 @@ public class RobotContainer {
   private Intake intake;
   private Feed feed;
   private Shooter shooter;
+  //private IntakeFeedCommand intakeFeedCommand; 
   private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
       .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
       .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // I want field-centric
@@ -64,13 +65,13 @@ public class RobotContainer {
     createSubsystems();
     configureBindings();
     registerNamedCommands();
+    setupTabs();
   }
 
   public void createSubsystems(){
     intake = new Intake();
     feed = new Feed();
     shooter = new Shooter();
-    setupTabs();
   }
 
   private void setupTabs() {
@@ -81,8 +82,7 @@ public class RobotContainer {
 
     autoChooser.setDefaultOption("Intake Auto", new PathPlannerAuto("Intake"));
     autoChooser.addOption("Circle Auto", new PathPlannerAuto("Circle"));
-    autoChooser.addOption("Intkae??", new PathPlannerAuto("New Auto"));
-
+    autoChooser.addOption("Shooter Auto", new PathPlannerAuto("Shooter auto"));
   }
 
 
@@ -90,7 +90,7 @@ public class RobotContainer {
 
     joystick.leftTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, .9, 0.9));
     joystick.rightTrigger(0.1).whileTrue(new IntakeFeedCommand(intake, feed, -0.9, -0.9));
-    joystick.rightBumper().whileTrue(new FeedShootCommand(shooter, feed ,1 ,0.5));
+    joystick.rightBumper().whileTrue(new FeedShootCommand(shooter, feed ,.8 ,0.5));
 
     drivetrain.setDefaultCommand( // Drivetrain will execute this command periodically
         drivetrain.applyRequest(() -> drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with
@@ -108,9 +108,10 @@ public class RobotContainer {
   }
 
   private void registerNamedCommands () {
-    NamedCommands.registerCommand("Intake", (new IntakeFeedCommand(intake, feed, .9, .9)));
-    
+    NamedCommands.registerCommand("Intake", new IntakeFeedCommand(intake, feed, .9, .9).withTimeout(1.0));
+    NamedCommands.registerCommand("Shoot!", new FeedShootCommand(shooter, feed, .8, .5));
   }
+
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
   }

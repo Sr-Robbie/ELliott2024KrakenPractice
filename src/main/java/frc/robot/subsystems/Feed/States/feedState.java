@@ -6,6 +6,7 @@ package frc.robot.subsystems.Feed.States;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Feed.Feed;
+
 public class feedState extends Command {
   /** Creates a new feedStates. */
   Feed feed;
@@ -24,6 +25,12 @@ public class feedState extends Command {
   @Override
   public void end(boolean interrupted) {
     feed.setPower(0.0);
+  }
+
+  @Override
+  public boolean isFinished() {
+      // TODO Auto-generated method stub
+      return super.isFinished();
   }
 
 }
